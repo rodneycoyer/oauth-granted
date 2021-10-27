@@ -1,21 +1,23 @@
-const express = require("express");
-const User = require("../models/user.model");
-
+const express =  require("express");
 const userRouter = express.Router();
 
-// list all users
-userRouter.get("/", (req, res) => {
-
+userRouter.route("/")
+.all((req, res, next) => {
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "text/plan");
+  next();
+})
+.get((res, req) => {
+  res.end(`Will send all users`)
+})
+.post((res, req) => {
+  res.end(`Will add user: ${req.body.name}`);
+})
+.put((res, req) => {
+  res.end(`PUT operation not supported on /users`)
+})
+.delete((res, req) => {
+  res.end(`Deleting all users`)
 });
-// create new user
-userRouter.post("/", (req, res) => {
 
-});
-// update user info
-userRouter.put("/", (req, res) => {
-
-});
-// delete user
-userRouter.delete("/", (req, res) => {
-
-});
+module.exports = userRouter;
