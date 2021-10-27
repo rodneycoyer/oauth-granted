@@ -2,14 +2,21 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+const mongoose = require("mongoose");
 
 // import routes
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/user.routes');
 
-// server info
-const hostname = "localhost";
-const port = 3000;
+// server
+const url = "mongodb://localhost:27017/oauth-server";
+const connect = mongoose.connect(url, {
+    useNewUrlParser: true, 
+    useUnifiedTopology: true
+});
+connect.then(() => console.log("Connected Correctly to new server"),
+  err => console.log(err)
+);
 
 const app = express();
 
@@ -27,11 +34,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // router routes
 app.use('/', indexRouter);
 app.use('/users', userRouter);
-
-// listen for sever connection
-app.listen(port, hostname, () => {
-  console.log(`server correctly running on http://${hostname}:${port}/`);
-});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
