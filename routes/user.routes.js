@@ -1,74 +1,23 @@
-const express =  require("express");
-const passport = require("passport");
-const User = require("../models/user.model")
-
+const express = require("express");
+const user_controller = require("../controllers/user.controller");
 const userRouter = express.Router();
 
-// Users Listing
-userRouter.get("/", (req, res) => {
-    User.find()
-    .then((users) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(users);
-    })
-    .catch(err => next(err));
-}),
-
-// create new user
-userRouter.post("/signup", (req, res) => {
-    User.register(
-        new User({username: req.body.username}),
-        req.body.password,
-        (err, user) => {
-            if (err) {
-                res.statusCode = 500;
-                res.setHeader("Content-Type", "application/json");
-                res.json({err: err});
-            } else {
-                if (req.body.firstName) {
-                    user.firstName = req.body.firstName;
-                }
-                if (req.body.lastName) {
-                    user.lastName = req.body.lastName;
-                }
-                user.save(err => {
-                    if (err) {
-                        res.statusCode = 500;
-                        res.setHeader("Content-Type", "application/json");
-                        res.json({err: err});
-                        return;
-                    }
-                    passport.authenticate("local"), (req, res, () => {
-                        res.statusCode = 200;
-                        res.setHeader("Content-Type", "application/json");
-                        res.json({success: true, status: "Registration Successful!"});
-                    });
-                });
-            }
-        }
-    );
-});
-
 // login
-userRouter.post("/login", passport.authenticate("local"), (req, res) => {
-    const token = authenticate.getToken({_id: req.user._id});
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.json({success: true, token: token, status: "you are successfully logged in!"});
-});
+userRouter.post("/login", user_controller.user_login);
 
 // logout
-userRouter.get("/logout", (req, res, next) => {
-    if (req.session) {
-        res.session.destroy();
-        res.clearCookie("session=id");
-        res.redirect("/");
-    } else {
-        const err = new Error("you are not logged in");
-        err.status = 401;
-        return next(err);
-    }
-});
+userRouter.get("/logout", user_controller.user_logout);
+
+// list users
+userRouter.get("/", user_controller.user_list);
+
+// register new user
+userRouter.post("/signup", user_controller.user_signup);
+
+// update user info
+
+// delete user Id
+
+// delete all users
 
 module.exports = userRouter;
