@@ -1,32 +1,74 @@
 const express =  require("express");
+const passport = require("passport");
+const User = require("../models/user.model")
+
 const userRouter = express.Router();
 
-userRouter.route("/")
-.get((res, req) => {
-  res.end(`Will send all users`);
-})
-.post((res, req) => {
-  res.end(`Will add user: ${req.body.name}`);
-})
-.put((res, req) => {
-  res.end(`PUT operation not supported on /users`);
-})
-.delete((res, req) => {
-  res.end(`Deleting all users`);
+// Users Listing
+userRouter.get("/", (req, res) => {
+    User.find()
+    .then((users) => {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.json(users);
+    })
+    .catch(err => next(err));
+}),
+
+// create new user
+userRouter.post("/signup", (req, res) => {
+    User.register(
+        new User({username: req.body.username}),
+        req.body.password,
+        (err, user) => {
+            if (err) {
+                res.statusCode = 500;
+                res.setHeader("Content-Type", "application/json");
+                res.json({err: err});
+            } else {
+                if (req.body.firstName) {
+                    user.firstName = req.body.firstName;
+                }
+                if (req.body.lastName) {
+                    user.lastName = req.body.lastName;
+                }
+                user.save(err => {
+                    if (err) {
+                        res.statusCode = 500;
+                        res.setHeader("Content-Type", "application/json");
+                        res.json({err: err});
+                        return;
+                    }
+                    passport.authenticate("local"), (req, res, () => {
+                        res.statusCode = 200;
+                        res.setHeader("Content-Type", "application/json");
+                        res.json({success: true, status: "Registration Successful!"});
+                    });
+                });
+            }
+        }
+    );
 });
 
-userRouter.route("/:userId")
-.get((res, req) => {
-  res.end(`Will send user: ${req.params.userId}`);
-})
-.post((res, req) => {
-  res.end(`POST not supported on /users/${req.params.userId}`);
-})
-.put((res, req) => {
-  res.end(`Will update user ${req.params.userId} info`);
-})
-.delete((res, req) => {
-  res.end(`user ${req.params.userId}`);
+// login
+userRouter.post("/login", passport.authenticate("local"), (req, res) => {
+    const token = authenticate.getToken({_id: req.user._id});
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.json({success: true, token: token, status: "you are successfully logged in!"});
+});
+
+// logout
+userRouter.get("/logout", (req, res, next) => {
+    if (req.session) {
+        res.session.destroy();
+        res.clearCookie("session=id");
+        res.redirect("/");
+    } else {
+        const err = new Error("you are not logged in");
+        err.status = 401;
+        return next(err);
+    }
 });
 
 module.exports = userRouter;
