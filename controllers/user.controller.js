@@ -1,11 +1,13 @@
 const User = require("../models/user.model");
 const passport = require("passport");
+const authenticate = require("../controllers/auth.controller")
 
 // user login
 exports.user_login = (req, res) => {
+    const token = authenticate.create_token({_id: req.user._id})
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
-    res.json({success: true, status: "OAuth Granted. You are successfully logged in!"});
+    res.json({success: true, token: token, status: "OAuth Granted. You are successfully logged in!"});
 };
 
 // user logout
